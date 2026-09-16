@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale Converter</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f5f5f4">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 800: '#292524' },
+                        zinc: { 500: '#71717a', 800: '#27272a' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+    </style>
+</head>
+<body class="bg-stone-100 text-zinc-800 font-sans min-h-screen flex p-4 md:p-8 justify-center gap-6 relative">
+
+    <!-- Sidebar: Saved & History -->
+    <aside class="w-80 bg-white rounded-xl shadow-sm border border-stone-200 hidden md:flex flex-col h-[700px] overflow-hidden">
+        
+        <!-- Saved Items Section -->
+        <div class="p-6 border-b border-stone-200 flex flex-col h-1/2">
+            <h2 class="text-lg font-semibold text-stone-800 mb-4 flex items-center justify-between">
+                Saved Labels
+                <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            </h2>
+            <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
+                <ul id="savedList" class="space-y-3">
+                    <!-- Saved items injected via JS -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Recent History Section -->
+        <div class="p-6 bg-stone-50 flex flex-col h-1/2">
+            <h2 class="text-sm font-semibold text-stone-500 mb-4 uppercase tracking-wider">Recent History</h2>
+            <div class="overflow-y-auto flex-1 pr-2">
+                <ul id="historyList" class="space-y-3">
+                    <!-- History items injected via JS -->
+                </ul>
+            </div>
+            <button onclick="clearHistory()" class="mt-4 w-full py-2 text-xs text-zinc-500 hover:text-stone-800 hover:bg-stone-200 rounded-lg transition">
+                Clear Recent
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="bg-white rounded-xl shadow-sm border border-stone-200 p-8 w-full max-w-lg h-fit">
+        <div class="flex justify-between items-end mb-6 border-b border-stone-200 pb-4">
+            <h1 class="text-2xl font-semibold text-stone-800">Scale Converter</h1>
+            <button onclick="openModal()" class="text-sm px-3 py-1.5 bg-stone-800 text-white rounded-md hover:bg-stone-700 transition shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Save
+            </button>
+        </div>
+
+        <!-- Scale Ratio Input -->
+        <div class="mb-8">
+            <label class="block text-sm font-medium text-zinc-500 mb-2">Scale Ratio</label>
+            <div class="flex items-center space-x-4">
+                <input type="number" id="ratioLeft" value="1" class="w-20 p-3 bg-stone-50 border border-stone-200 rounded-lg text-center focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" oninput="calculate('real')">
+                <span class="text-xl font-medium text-zinc-500">:</span>
+                <input type="number" id="ratioRight" value="60" class="flex-1 p-3 bg-stone-50 border border-stone-200 rounded-lg text-center focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" oninput="calculate('real')">
+            </div>
+        </div>
+
+        <!-- Real World Size -->
+        <div class="mb-6 p-4 bg-stone-50 rounded-lg border border-stone-100">
+            <label class="block text-sm font-medium text-zinc-500 mb-2">Real-World Dimension (e.g., Door width)</label>
+            <div class="flex space-x-2">
+                <input type="number" id="realValue" class="flex-1 p-3 border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" placeholder="Enter actual size" oninput="calculate('real')">
+                <select id="realUnit" class="w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('real')">
+                    <option value="mm" selected>mm</option>
+                    <option value="cm">cm</option>
+                    <option value="m">m</option>
+                    <option value="in">in</option>
+                    <option value="ft">ft</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex justify-center mb-6">
+            <svg class="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+        </div>
+
+        <!-- Scaled Model Size -->
+        <div class="mb-2 p-4 bg-stone-50 rounded-lg border border-stone-100">
+            <label class="block text-sm font-medium text-zinc-500 mb-2">Scaled Dimension (Paper size)</label>
+            <div class="flex space-x-2">
+                <input type="number" id="scaleValue" class="flex-1 p-3 border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" placeholder="Enter scaled size" oninput="calculate('scale')">
+                <select id="scaleUnit" class="w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('scale')">
+                    <option value="mm">mm</option>
+                    <option value="cm" selected>cm</option>
+                    <option value="m">m</option>
+                    <option value="in">in</option>
+                    <option value="ft">ft</option>
+                </select>
+            </div>
+        </div>
+    </main>
+
+    <!-- Label Modal -->
+    <div id="saveModal" class="fixed inset-0 bg-stone-900/40 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl border border-stone-200">
+            <h3 class="text-lg font-semibold text-stone-800 mb-2">Save Dimension</h3>
+            <p class="text-sm text-zinc-500 mb-4" id="modalPreview">1:60 • 800 mm ➔ 1.33 cm</p>
+            
+            <label class="block text-sm font-medium text-zinc-600 mb-1">Custom Label</label>
+            <input type="text" id="saveLabel" placeholder="e.g., Door 1 - 1:60" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-lg mb-6 focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" onkeydown="if(event.key === 'Enter') confirmSave()">
+            
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-zinc-600 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition">Cancel</button>
+                <button onclick="confirmSave()" class="px-4 py-2 text-sm font-medium bg-stone-800 text-white rounded-lg hover:bg-stone-700 transition">Save Label</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed', err));
+            });
+        }
+    </script>
+</body>
+</html>
