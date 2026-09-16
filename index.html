@@ -23,15 +23,27 @@
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
+        /* Custom scrollbar for sidebar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e7e5e4; border-radius: 4px; }
     </style>
 </head>
-<body class="bg-stone-100 text-zinc-800 font-sans min-h-screen flex p-4 md:p-8 justify-center gap-6 relative">
+<body class="bg-stone-100 text-zinc-800 font-sans min-h-screen flex p-4 md:p-8 justify-center gap-6 overflow-x-hidden">
+
+    <!-- Mobile Backdrop Overlay -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-stone-900/40 z-30 hidden md:hidden backdrop-blur-sm transition-opacity opacity-0" onclick="toggleSidebar()"></div>
 
     <!-- Sidebar: Saved & History -->
-    <aside class="w-80 bg-white rounded-xl shadow-sm border border-stone-200 hidden md:flex flex-col h-[700px] overflow-hidden">
+    <!-- On mobile: Fixed drawer sliding from left. On desktop: Relative static sidebar. -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-white shadow-2xl md:shadow-sm border-r border-stone-200 flex flex-col h-full md:h-[700px] md:rounded-xl md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         
+        <!-- Mobile Close Button (Hidden on Desktop) -->
+        <button onclick="toggleSidebar()" class="absolute top-4 right-4 md:hidden text-stone-400 hover:text-stone-800 z-50">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
         <!-- Saved Items Section -->
-        <div class="p-6 border-b border-stone-200 flex flex-col h-1/2">
+        <div class="p-6 border-b border-stone-200 flex flex-col h-1/2 mt-8 md:mt-0">
             <h2 class="text-lg font-semibold text-stone-800 mb-4 flex items-center justify-between">
                 Saved Labels
                 <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
@@ -44,25 +56,32 @@
         </div>
 
         <!-- Recent History Section -->
-        <div class="p-6 bg-stone-50 flex flex-col h-1/2">
+        <div class="p-6 bg-stone-50 flex flex-col h-1/2 md:rounded-b-xl">
             <h2 class="text-sm font-semibold text-stone-500 mb-4 uppercase tracking-wider">Recent History</h2>
-            <div class="overflow-y-auto flex-1 pr-2">
+            <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
                 <ul id="historyList" class="space-y-3">
                     <!-- History items injected via JS -->
                 </ul>
             </div>
-            <button onclick="clearHistory()" class="mt-4 w-full py-2 text-xs text-zinc-500 hover:text-stone-800 hover:bg-stone-200 rounded-lg transition">
+            <button onclick="clearHistory()" class="mt-4 w-full py-2 text-xs text-zinc-500 hover:text-stone-800 hover:bg-stone-200 rounded-lg transition border border-stone-200">
                 Clear Recent
             </button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="bg-white rounded-xl shadow-sm border border-stone-200 p-8 w-full max-w-lg h-fit">
-        <div class="flex justify-between items-end mb-6 border-b border-stone-200 pb-4">
-            <h1 class="text-2xl font-semibold text-stone-800">Scale Converter</h1>
+    <main class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8 w-full max-w-lg h-fit relative z-10">
+        
+        <div class="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
+            <div class="flex items-center gap-3">
+                <!-- Mobile Hamburger Menu Button -->
+                <button onclick="toggleSidebar()" class="md:hidden text-stone-600 hover:text-stone-900 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h1 class="text-xl md:text-2xl font-semibold text-stone-800">Scale Converter</h1>
+            </div>
             <button onclick="openModal()" class="text-sm px-3 py-1.5 bg-stone-800 text-white rounded-md hover:bg-stone-700 transition shadow-sm flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Save
             </button>
         </div>
@@ -70,19 +89,19 @@
         <!-- Scale Ratio Input -->
         <div class="mb-8">
             <label class="block text-sm font-medium text-zinc-500 mb-2">Scale Ratio</label>
-            <div class="flex items-center space-x-4">
-                <input type="number" id="ratioLeft" value="1" class="w-20 p-3 bg-stone-50 border border-stone-200 rounded-lg text-center focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" oninput="calculate('real')">
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <input type="number" id="ratioLeft" value="1" class="w-16 sm:w-20 p-3 bg-stone-50 border border-stone-200 rounded-lg text-center focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" oninput="calculate('real')">
                 <span class="text-xl font-medium text-zinc-500">:</span>
                 <input type="number" id="ratioRight" value="60" class="flex-1 p-3 bg-stone-50 border border-stone-200 rounded-lg text-center focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" oninput="calculate('real')">
             </div>
         </div>
 
         <!-- Real World Size -->
-        <div class="mb-6 p-4 bg-stone-50 rounded-lg border border-stone-100">
-            <label class="block text-sm font-medium text-zinc-500 mb-2">Real-World Dimension (e.g., Door width)</label>
-            <div class="flex space-x-2">
+        <div class="mb-4 sm:mb-6 p-4 bg-stone-50 rounded-lg border border-stone-100">
+            <label class="block text-sm font-medium text-zinc-500 mb-2">Real-World Dimension</label>
+            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <input type="number" id="realValue" class="flex-1 p-3 border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" placeholder="Enter actual size" oninput="calculate('real')">
-                <select id="realUnit" class="w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('real')">
+                <select id="realUnit" class="w-full sm:w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('real')">
                     <option value="mm" selected>mm</option>
                     <option value="cm">cm</option>
                     <option value="m">m</option>
@@ -92,7 +111,7 @@
             </div>
         </div>
 
-        <div class="flex justify-center mb-6">
+        <div class="flex justify-center mb-4 sm:mb-6">
             <svg class="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
@@ -100,10 +119,10 @@
 
         <!-- Scaled Model Size -->
         <div class="mb-2 p-4 bg-stone-50 rounded-lg border border-stone-100">
-            <label class="block text-sm font-medium text-zinc-500 mb-2">Scaled Dimension (Paper size)</label>
-            <div class="flex space-x-2">
+            <label class="block text-sm font-medium text-zinc-500 mb-2">Scaled Dimension</label>
+            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <input type="number" id="scaleValue" class="flex-1 p-3 border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" placeholder="Enter scaled size" oninput="calculate('scale')">
-                <select id="scaleUnit" class="w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('scale')">
+                <select id="scaleUnit" class="w-full sm:w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('scale')">
                     <option value="mm">mm</option>
                     <option value="cm" selected>cm</option>
                     <option value="m">m</option>
@@ -115,7 +134,7 @@
     </main>
 
     <!-- Label Modal -->
-    <div id="saveModal" class="fixed inset-0 bg-stone-900/40 hidden items-center justify-center z-50 backdrop-blur-sm">
+    <div id="saveModal" class="fixed inset-0 bg-stone-900/40 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
         <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl border border-stone-200">
             <h3 class="text-lg font-semibold text-stone-800 mb-2">Save Dimension</h3>
             <p class="text-sm text-zinc-500 mb-4" id="modalPreview">1:60 • 800 mm ➔ 1.33 cm</p>

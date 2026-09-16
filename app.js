@@ -193,3 +193,24 @@ function renderSaved() {
         `;
     });
 }
+
+// --- Mobile Sidebar Toggle Logic ---
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    
+    // Check if it's currently closed (has the negative translate class)
+    if (sidebar.classList.contains('-translate-x-full')) {
+        // Open it
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        // Small delay to allow the browser to remove 'hidden' before animating opacity
+        setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+    } else {
+        // Close it
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('opacity-0');
+        // Wait for opacity transition to finish before hiding completely
+        setTimeout(() => backdrop.classList.add('hidden'), 300);
+    }
+}
