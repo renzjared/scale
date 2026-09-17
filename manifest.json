@@ -3,6 +3,7 @@
   "short_name": "Scale",
   "description": "A minimalist, bi-directional scale and proportion converter.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#F7F7F8",
   "theme_color": "#58CC02",

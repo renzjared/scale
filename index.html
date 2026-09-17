@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scale Calculator daw</title>
+    <title>Scale Converter daw</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#58CC02">
     
@@ -33,10 +33,16 @@
         }
     </script>
     <style>
-        body { font-family: 'Nunito', sans-serif; }
+        /* ADDED: overscroll-behavior-y prevents mobile pull-to-refresh */
+        html, body { 
+            font-family: 'Nunito', sans-serif; 
+            overscroll-behavior-y: none; 
+        }
+        
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 6px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; }
@@ -99,7 +105,7 @@
                 <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-gray-800 dark:hover:text-white">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <h1 class="text-2xl md:text-3xl font-extrabold text-duo-green">Scale Calculator</h1>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-duo-green">Scale Converter</h1>
             </div>
             <div class="flex items-center gap-3">
                 <!-- Dark Mode Toggle -->
@@ -143,7 +149,7 @@
 
         <div class="flex justify-center mb-4">
             <svg class="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4-4l-4-4" />
             </svg>
         </div>
 
@@ -174,7 +180,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Budget
                 </a>
-                <a href="https://renzjared.github.io/notes" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-duo-green dark:hover:text-duo-green transition">
+                <a href="https://renzjared.github.io/grades" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-duo-green dark:hover:text-duo-green transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     Notes
                 </a>
@@ -186,8 +192,8 @@
         </footer>
 
         <!-- Tiny Easter Egg Trigger -->
-        <div class="text-center mt-3 h-4">
-            <button onclick="openMiniGame()" class="text-xl opacity-10 hover:opacity-100 transition-opacity transform hover:scale-110 focus:outline-none" title="Take a break">
+        <div class="text-center mt-6 mb-2">
+            <button onclick="openMiniGame()" class="text-2xl opacity-40 hover:opacity-100 transition-opacity transform hover:scale-110 focus:outline-none grayscale hover:grayscale-0" title="Take a break">
                 👾
             </button>
         </div>
@@ -224,8 +230,6 @@
         </div>
     </div>
 
-    <!-- Modals below here are the identical Save/Folder Modals from before -->
-    
     <!-- Save Modal -->
     <div id="saveModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-duo-card dark:bg-duo-darkCard rounded-3xl p-7 w-full max-w-sm shadow-2xl border-2 border-duo-border dark:border-duo-darkBorder">
