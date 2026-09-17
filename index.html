@@ -1,107 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scale Converter</title>
+    <title>Scale Calculator daw</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f5f5f4">
+    <meta name="theme-color" content="#58CC02">
+    
+    <!-- Duolingo Font: Nunito -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Nunito', 'sans-serif'] },
                     colors: {
-                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 800: '#292524' },
-                        zinc: { 500: '#71717a', 800: '#27272a' }
+                        duo: {
+                            bg: '#F7F7F8', card: '#FFFFFF', border: '#E5E5E5',
+                            darkBg: '#131F24', darkCard: '#202F36', darkBorder: '#37464F',
+                            green: '#58CC02', greenDark: '#58A700',
+                            blue: '#1CB0F6', blueDark: '#1899D6',
+                            text: '#4B4B4B', darkText: '#FFFFFF', grayText: '#777777'
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
+        body { font-family: 'Nunito', sans-serif; }
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
-        /* Custom scrollbar for sidebar */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e7e5e4; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 6px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; }
+        
+        /* Duolingo Chunky Button Styles */
+        .btn-3d { transition: all 0.1s; position: relative; }
+        .btn-3d:active { transform: translateY(4px); border-bottom-width: 0px !important; margin-bottom: 4px; }
     </style>
 </head>
-<body class="bg-stone-100 text-zinc-800 font-sans min-h-screen flex p-4 md:p-8 justify-center gap-6 overflow-x-hidden">
+<body class="bg-duo-bg dark:bg-duo-darkBg text-duo-text dark:text-duo-darkText min-h-screen flex p-4 md:p-6 justify-center gap-6 overflow-x-hidden transition-colors duration-300">
 
     <!-- Mobile Backdrop Overlay -->
-    <div id="sidebarBackdrop" class="fixed inset-0 bg-stone-900/40 z-30 hidden md:hidden backdrop-blur-sm transition-opacity opacity-0" onclick="toggleSidebar()"></div>
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity opacity-0" onclick="toggleSidebar()"></div>
 
-    <!-- Sidebar: Saved & History -->
-    <!-- On mobile: Fixed drawer sliding from left. On desktop: Relative static sidebar. -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-white shadow-2xl md:shadow-sm border-r border-stone-200 flex flex-col h-full md:h-[700px] md:rounded-xl md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+    <!-- Sidebar: Folders & History -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-80 bg-duo-card dark:bg-duo-darkCard shadow-2xl md:shadow-none border-r-2 md:border-2 border-duo-border dark:border-duo-darkBorder flex flex-col h-full md:h-[750px] md:rounded-3xl md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         
-        <!-- Mobile Close Button (Hidden on Desktop) -->
-        <button onclick="toggleSidebar()" class="absolute top-4 right-4 md:hidden text-stone-400 hover:text-stone-800 z-50">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <!-- Mobile Close -->
+        <button onclick="toggleSidebar()" class="absolute top-4 right-4 md:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 z-50">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
-        <!-- Saved Items Section -->
-        <div class="p-6 border-b border-stone-200 flex flex-col h-1/2 mt-8 md:mt-0">
-            <h2 class="text-lg font-semibold text-stone-800 mb-4 flex items-center justify-between">
-                Saved Labels
-                <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-            </h2>
-            <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
-                <ul id="savedList" class="space-y-3">
-                    <!-- Saved items injected via JS -->
-                </ul>
+        <!-- Saved Tree Section -->
+        <div class="p-5 border-b-2 border-duo-border dark:border-duo-darkBorder flex flex-col h-[60%] mt-8 md:mt-0">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-extrabold flex items-center gap-2">
+                    <svg class="w-6 h-6 text-duo-blue" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                    Saved Labels
+                </h2>
+                <button onclick="openAddFolderModal()" class="text-duo-blue hover:text-duo-blueDark font-bold text-sm bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-xl transition">
+                    + Folder
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar" id="treeContainer">
+                <!-- Tree injected via JS -->
             </div>
         </div>
 
         <!-- Recent History Section -->
-        <div class="p-6 bg-stone-50 flex flex-col h-1/2 md:rounded-b-xl">
-            <h2 class="text-sm font-semibold text-stone-500 mb-4 uppercase tracking-wider">Recent History</h2>
+        <div class="p-5 bg-gray-50 dark:bg-[#1A262C] flex flex-col h-[40%] md:rounded-b-3xl">
+            <h2 class="text-sm font-bold text-duo-grayText dark:text-gray-400 mb-3 uppercase tracking-wider">Recent History</h2>
             <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
                 <ul id="historyList" class="space-y-3">
-                    <!-- History items injected via JS -->
+                    <!-- History injected via JS -->
                 </ul>
             </div>
-            <button onclick="clearHistory()" class="mt-4 w-full py-2 text-xs text-zinc-500 hover:text-stone-800 hover:bg-stone-200 rounded-lg transition border border-stone-200">
+            <button onclick="clearHistory()" class="mt-4 w-full py-3 font-bold text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl transition-colors border-2 border-transparent">
                 Clear Recent
             </button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8 w-full max-w-lg h-fit relative z-10">
+    <main class="bg-duo-card dark:bg-duo-darkCard rounded-3xl shadow-sm border-2 border-duo-border dark:border-duo-darkBorder p-6 md:p-8 w-full max-w-lg h-fit relative z-10 flex flex-col">
         
-        <div class="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 border-b-2 border-duo-border dark:border-duo-darkBorder pb-4">
             <div class="flex items-center gap-3">
-                <!-- Mobile Hamburger Menu Button -->
-                <button onclick="toggleSidebar()" class="md:hidden text-stone-600 hover:text-stone-900 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <h1 class="text-xl md:text-2xl font-semibold text-stone-800">Scale Converter</h1>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-duo-green">Scale Calculator</h1>
             </div>
-            <button onclick="openModal()" class="text-sm px-3 py-1.5 bg-stone-800 text-white rounded-md hover:bg-stone-700 transition shadow-sm flex items-center gap-2">
-                <svg class="w-4 h-4 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Save
-            </button>
+            <div class="flex items-center gap-3">
+                <!-- Dark Mode Toggle -->
+                <button onclick="toggleTheme()" class="p-2 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+                
+                <button onclick="openSaveModal()" class="btn-3d text-base px-5 py-2 bg-duo-blue text-white font-bold rounded-2xl border-b-4 border-duo-blueDark flex items-center gap-2">
+                    <svg class="w-5 h-5 hidden sm:block" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                    Save
+                </button>
+            </div>
         </div>
 
         <!-- Scale Ratio Input -->
-        <div class="mb-8">
-            <label class="block text-sm font-medium text-zinc-500 mb-2">Scale Ratio</label>
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                <input type="number" id="ratioLeft" value="1" class="w-16 sm:w-20 p-3 bg-stone-50 border border-stone-200 rounded-lg text-center focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" oninput="calculate('real')">
-                <span class="text-xl font-medium text-zinc-500">:</span>
-                <input type="number" id="ratioRight" value="60" class="flex-1 p-3 bg-stone-50 border border-stone-200 rounded-lg text-center focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" oninput="calculate('real')">
+        <div class="mb-6">
+            <label class="block text-base font-bold text-duo-grayText dark:text-gray-400 mb-2">Scale Ratio</label>
+            <div class="flex items-center space-x-3">
+                <input type="number" id="ratioLeft" value="1" class="w-20 p-4 bg-gray-50 dark:bg-[#1A262C] border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl text-center font-bold text-lg focus:outline-none focus:border-duo-blue dark:focus:border-duo-blue text-duo-text dark:text-white" oninput="calculate('real')">
+                <span class="text-2xl font-extrabold text-gray-400">:</span>
+                <input type="number" id="ratioRight" value="60" class="flex-1 p-4 bg-gray-50 dark:bg-[#1A262C] border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl text-center font-bold text-lg focus:outline-none focus:border-duo-blue dark:focus:border-duo-blue text-duo-text dark:text-white" oninput="calculate('real')">
             </div>
         </div>
 
         <!-- Real World Size -->
-        <div class="mb-4 sm:mb-6 p-4 bg-stone-50 rounded-lg border border-stone-100">
-            <label class="block text-sm font-medium text-zinc-500 mb-2">Real-World Dimension</label>
-            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <input type="number" id="realValue" class="flex-1 p-3 border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" placeholder="Enter actual size" oninput="calculate('real')">
-                <select id="realUnit" class="w-full sm:w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('real')">
+        <div class="mb-4 p-5 bg-gray-50 dark:bg-[#1A262C] rounded-3xl border-2 border-gray-100 dark:border-transparent">
+            <label class="block text-base font-bold text-duo-grayText dark:text-gray-400 mb-3">Real-World Dimension</label>
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                <input type="number" id="realValue" class="flex-1 p-4 border-2 border-gray-200 dark:border-duo-darkBorder dark:bg-duo-darkCard rounded-2xl font-bold text-lg focus:outline-none focus:border-duo-green dark:focus:border-duo-green text-duo-text dark:text-white" placeholder="Enter actual size" oninput="calculate('real')">
+                <select id="realUnit" class="w-full sm:w-28 p-4 bg-white dark:bg-duo-darkCard border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl font-bold focus:outline-none focus:border-duo-green dark:text-white" onchange="calculate('real')">
                     <option value="mm" selected>mm</option>
                     <option value="cm">cm</option>
                     <option value="m">m</option>
@@ -111,18 +141,18 @@
             </div>
         </div>
 
-        <div class="flex justify-center mb-4 sm:mb-6">
-            <svg class="w-6 h-6 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        <div class="flex justify-center mb-4">
+            <svg class="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
         </div>
 
         <!-- Scaled Model Size -->
-        <div class="mb-2 p-4 bg-stone-50 rounded-lg border border-stone-100">
-            <label class="block text-sm font-medium text-zinc-500 mb-2">Scaled Dimension</label>
-            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <input type="number" id="scaleValue" class="flex-1 p-3 border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" placeholder="Enter scaled size" oninput="calculate('scale')">
-                <select id="scaleUnit" class="w-full sm:w-24 p-3 bg-white border border-stone-200 rounded-lg focus:outline-none focus:border-stone-400" onchange="calculate('scale')">
+        <div class="mb-2 p-5 bg-gray-50 dark:bg-[#1A262C] rounded-3xl border-2 border-gray-100 dark:border-transparent">
+            <label class="block text-base font-bold text-duo-grayText dark:text-gray-400 mb-3">Scaled Dimension</label>
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                <input type="number" id="scaleValue" class="flex-1 p-4 border-2 border-gray-200 dark:border-duo-darkBorder dark:bg-duo-darkCard rounded-2xl font-bold text-lg focus:outline-none focus:border-duo-green dark:focus:border-duo-green text-duo-text dark:text-white" placeholder="Enter scaled size" oninput="calculate('scale')">
+                <select id="scaleUnit" class="w-full sm:w-28 p-4 bg-white dark:bg-duo-darkCard border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl font-bold focus:outline-none focus:border-duo-green dark:text-white" onchange="calculate('scale')">
                     <option value="mm">mm</option>
                     <option value="cm" selected>cm</option>
                     <option value="m">m</option>
@@ -131,20 +161,121 @@
                 </select>
             </div>
         </div>
+
+        <div class="flex-grow"></div>
+
+        <!-- App Footer Links & Attribution -->
+        <footer class="mt-8 pt-6 border-t-2 border-gray-200 dark:border-duo-darkBorder flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="text-sm font-bold text-gray-400 dark:text-gray-500 tracking-wide">
+                Developed by Renz Jared Rolle
+            </div>
+            <div class="flex items-center gap-5">
+                <a href="https://renzjared.github.io/budget" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-duo-blue dark:hover:text-duo-blue transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Budget
+                </a>
+                <a href="https://renzjared.github.io/notes" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-duo-green dark:hover:text-duo-green transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Notes
+                </a>
+                <a href="https://renzjared.github.io/recipes" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-orange-400 dark:hover:text-orange-400 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Recipes
+                </a>
+            </div>
+        </footer>
+
+        <!-- Tiny Easter Egg Trigger -->
+        <div class="text-center mt-3 h-4">
+            <button onclick="openMiniGame()" class="text-xl opacity-10 hover:opacity-100 transition-opacity transform hover:scale-110 focus:outline-none" title="Take a break">
+                👾
+            </button>
+        </div>
     </main>
 
-    <!-- Label Modal -->
-    <div id="saveModal" class="fixed inset-0 bg-stone-900/40 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl border border-stone-200">
-            <h3 class="text-lg font-semibold text-stone-800 mb-2">Save Dimension</h3>
-            <p class="text-sm text-zinc-500 mb-4" id="modalPreview">1:60 • 800 mm ➔ 1.33 cm</p>
+    <!-- Minigame Modal -->
+    <div id="gameModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-duo-card dark:bg-duo-darkCard rounded-3xl p-6 w-full max-w-sm shadow-2xl border-2 border-duo-border dark:border-duo-darkBorder text-center">
+            <h3 class="text-xl font-extrabold mb-1 text-duo-green">Snake Break</h3>
+            <p class="text-sm font-bold text-gray-400 mb-4">Score: <span id="gameScore" class="text-duo-blue">0</span></p>
             
-            <label class="block text-sm font-medium text-zinc-600 mb-1">Custom Label</label>
-            <input type="text" id="saveLabel" placeholder="e.g., Door 1 - 1:60" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-lg mb-6 focus:outline-none focus:border-stone-400 focus:ring-1 focus:ring-stone-400" onkeydown="if(event.key === 'Enter') confirmSave()">
+            <div class="bg-gray-100 dark:bg-[#1A262C] rounded-2xl border-2 border-gray-200 dark:border-duo-darkBorder mx-auto overflow-hidden relative shadow-inner" style="width: 240px; height: 240px;">
+                <canvas id="gameCanvas" width="240" height="240"></canvas>
+                <!-- Game Over Overlay -->
+                <div id="gameOverScreen" class="absolute inset-0 bg-black/60 hidden flex-col items-center justify-center backdrop-blur-sm">
+                    <div class="text-white font-extrabold text-2xl mb-4">Game Over!</div>
+                    <button onclick="startSnakeGame()" class="btn-3d px-5 py-2 bg-duo-blue text-white font-bold rounded-xl border-b-4 border-duo-blueDark">Play Again</button>
+                </div>
+            </div>
+
+            <!-- Mobile Controls -->
+            <div class="grid grid-cols-3 gap-2 mt-5 max-w-[180px] mx-auto">
+                <div></div>
+                <button onclick="snakeDir({x:0, y:-1})" class="btn-3d bg-gray-100 dark:bg-gray-800 p-3 rounded-2xl border-b-4 border-gray-200 dark:border-gray-700 active:border-b-0 text-xl">⬆️</button>
+                <div></div>
+                <button onclick="snakeDir({x:-1, y:0})" class="btn-3d bg-gray-100 dark:bg-gray-800 p-3 rounded-2xl border-b-4 border-gray-200 dark:border-gray-700 active:border-b-0 text-xl">⬅️</button>
+                <button onclick="snakeDir({x:0, y:1})" class="btn-3d bg-gray-100 dark:bg-gray-800 p-3 rounded-2xl border-b-4 border-gray-200 dark:border-gray-700 active:border-b-0 text-xl">⬇️</button>
+                <button onclick="snakeDir({x:1, y:0})" class="btn-3d bg-gray-100 dark:bg-gray-800 p-3 rounded-2xl border-b-4 border-gray-200 dark:border-gray-700 active:border-b-0 text-xl">➡️</button>
+            </div>
             
-            <div class="flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-zinc-600 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition">Cancel</button>
-                <button onclick="confirmSave()" class="px-4 py-2 text-sm font-medium bg-stone-800 text-white rounded-lg hover:bg-stone-700 transition">Save Label</button>
+            <div class="mt-6 pt-4 border-t-2 border-gray-100 dark:border-duo-darkBorder">
+                <button onclick="closeMiniGame()" class="btn-3d w-full py-3 text-base font-bold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 border-b-4 border-gray-300 dark:border-gray-800 rounded-2xl">Close Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals below here are the identical Save/Folder Modals from before -->
+    
+    <!-- Save Modal -->
+    <div id="saveModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-duo-card dark:bg-duo-darkCard rounded-3xl p-7 w-full max-w-sm shadow-2xl border-2 border-duo-border dark:border-duo-darkBorder">
+            <h3 class="text-xl font-extrabold mb-2">Save Dimension</h3>
+            <p class="text-sm font-bold text-gray-400 mb-5" id="modalPreview">1:60 • 800 mm ➔ 1.33 cm</p>
+            
+            <label class="block text-base font-bold text-duo-grayText dark:text-gray-300 mb-2">Custom Label</label>
+            <input type="text" id="saveLabel" placeholder="e.g., Door 1" class="w-full p-4 bg-gray-50 dark:bg-duo-darkBg border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl mb-4 font-bold focus:outline-none focus:border-duo-blue dark:text-white" onkeydown="if(event.key === 'Enter') confirmSave()">
+            
+            <label class="block text-base font-bold text-duo-grayText dark:text-gray-300 mb-2">Folder</label>
+            <select id="saveFolderSelect" class="w-full p-4 bg-gray-50 dark:bg-duo-darkBg border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl mb-8 font-bold focus:outline-none focus:border-duo-blue dark:text-white">
+                <option value="root">None (Root)</option>
+            </select>
+            
+            <div class="flex gap-3">
+                <button onclick="closeModals()" class="flex-1 py-3 text-base font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl transition">Cancel</button>
+                <button onclick="confirmSave()" class="btn-3d flex-1 py-3 text-base font-bold bg-duo-green text-white border-b-4 border-duo-greenDark rounded-2xl">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Move Item Modal -->
+    <div id="moveModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-duo-card dark:bg-duo-darkCard rounded-3xl p-7 w-full max-w-sm shadow-2xl border-2 border-duo-border dark:border-duo-darkBorder">
+            <h3 class="text-xl font-extrabold mb-5">Move Item</h3>
+            <input type="hidden" id="moveItemId">
+            
+            <label class="block text-base font-bold text-duo-grayText dark:text-gray-300 mb-2">Select Destination</label>
+            <select id="moveFolderSelect" class="w-full p-4 bg-gray-50 dark:bg-duo-darkBg border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl mb-8 font-bold focus:outline-none focus:border-duo-blue dark:text-white">
+                <option value="root">None (Root)</option>
+            </select>
+            
+            <div class="flex gap-3">
+                <button onclick="closeModals()" class="flex-1 py-3 text-base font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl transition">Cancel</button>
+                <button onclick="confirmMove()" class="btn-3d flex-1 py-3 text-base font-bold bg-duo-blue text-white border-b-4 border-duo-blueDark rounded-2xl">Move</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Folder Modal -->
+    <div id="addFolderModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-duo-card dark:bg-duo-darkCard rounded-3xl p-7 w-full max-w-sm shadow-2xl border-2 border-duo-border dark:border-duo-darkBorder">
+            <h3 class="text-xl font-extrabold mb-5">New Folder</h3>
+            
+            <label class="block text-base font-bold text-duo-grayText dark:text-gray-300 mb-2">Folder Name</label>
+            <input type="text" id="folderName" placeholder="e.g., House Plans" class="w-full p-4 bg-gray-50 dark:bg-duo-darkBg border-2 border-gray-200 dark:border-duo-darkBorder rounded-2xl mb-8 font-bold focus:outline-none focus:border-duo-blue dark:text-white" onkeydown="if(event.key === 'Enter') confirmAddFolder()">
+            
+            <div class="flex gap-3">
+                <button onclick="closeModals()" class="flex-1 py-3 text-base font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl transition">Cancel</button>
+                <button onclick="confirmAddFolder()" class="btn-3d flex-1 py-3 text-base font-bold bg-duo-blue text-white border-b-4 border-duo-blueDark rounded-2xl">Create</button>
             </div>
         </div>
     </div>
@@ -152,9 +283,7 @@
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed', err));
-            });
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(e => console.log(e)));
         }
     </script>
 </body>

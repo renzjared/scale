@@ -1,11 +1,11 @@
 {
   "name": "Scale Converter",
-  "short_name": "ScaleCalc",
+  "short_name": "Scale",
   "description": "A minimalist, bi-directional scale and proportion converter.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f5f5f4",
-  "theme_color": "#f5f5f4",
+  "background_color": "#F7F7F8",
+  "theme_color": "#58CC02",
   "icons": [
     {
       "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNyAxNlY0bTBfMEwzXzhtNF80bDRfNG02XzB2MTJtMF8wbDRfNG0tNF80bC00XzQiLz48L3N2Zz4=",
