@@ -1,10 +1,12 @@
-const CACHE_NAME = 'scalecalc-v3'; 
+const CACHE_NAME = 'scalecalc-v4';
 
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './app.js',
-    './manifest.json'
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
